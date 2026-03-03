@@ -18,6 +18,7 @@
 #include "RTOS.h"
 #include "streaming_config.h"
 #include "streaming_handler.h"
+#include <string.h>
 
 static OS_MUTEX signal_mutex;
 static uint32_t signal_counter = 0;
@@ -49,7 +50,7 @@ static signal_t *get_signal_by_id(const char *signalId)
 	return NULL;
 }
 
-static signal_t *signals_add_signal(signal_definition_t *def, signal_table_t *table)
+signal_t *signals_add_signal(signal_definition_t *def, signal_table_t *table)
 {
 	OS_MUTEX_LockBlocked(&signal_mutex);
 	// check if we can handle more signals
@@ -153,7 +154,7 @@ int signals_subscribe(const struct stream *stream, const char *signalId)
 			streaming_cbs->on_subscribe(stream, &related_signal[i]);
 			_signal_subscribe(stream, &related_signal[i], 0); // valueIndex is fixed to 0 and gets ignored
 		}
-		if (!signal->subscribed && signal->definition.signaltype == signal_type_value) {
+		if (!signal->subscribed && signal->definition->signaltype == signal_type_value) {
 			table->subscribed_value_signal_count++;
 		}
 	}
@@ -166,6 +167,8 @@ int signals_subscribe(const struct stream *stream, const char *signalId)
 
 void signals_init(void)
 {
+	signal_counter = 0;
+	table_counter = 0;
 	OS_MUTEX_Create(&signal_mutex);
 }
 

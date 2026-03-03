@@ -1,6 +1,10 @@
 #ifndef _STREAMING_SIGNALS_H_
 #define _STREAMING_SIGNALS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "stream_id.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -89,5 +93,9 @@ signal_table_t *signals_add_table(signal_definition_t *def, unsigned int count, 
 bool signal_has_subscription(signal_t *signal);
 unsigned int signal_get_signal_no(signal_t *signal);
 void signals_purge_stream(const struct stream *stream);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

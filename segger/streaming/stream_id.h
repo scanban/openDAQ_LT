@@ -3,6 +3,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NUM_STREAMS_MAX 1
 
 extern struct stream single_stream;
@@ -19,5 +23,9 @@ struct stream {
 struct stream *stream_malloc(int socket, const char *id);
 void stream_free(struct stream *stream);
 void streaming_streams_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
