@@ -7,6 +7,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include "mpack.h"
 
 #if STREAMING_TRANSPORT == STREAMING_TRANSPORT_POSIX
 
@@ -127,7 +128,79 @@ TEST_F(PosixStreamingIntegrationTest, InitialSignals) {
     usleep(150000);
     total_received = recv(client_sock, buffer, sizeof(buffer), MSG_DONTWAIT);
     
-    EXPECT_GT(total_received, 40); // Rough estimate for version + init + avail
+    ASSERT_GT(total_received, 40);
+
+    // Parse the concatenated packets
+    const uint8_t* ptr = (const uint8_t*)buffer;
+    const uint8_t* end = ptr + total_received;
+    bool signal_found = false;
+
+    while (ptr < end) {
+        if (end - ptr < 4) break;
+        uint32_t header = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+        uint32_t packet_type = (header >> 28) & 0x3;
+        uint32_t payload_size = (header >> 20) & 0xFF;
+        ptr += 4;
+
+        if (payload_size == 0) {
+            if (end - ptr < 4) break;
+            payload_size = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+            ptr += 4;
+        }
+
+        if (packet_type == 2) { // TYPE_META
+            // First 4 bytes of meta payload is meta_type (METAINFORMATION_MSGPACK = 2)
+            if (end - ptr < 4) break;
+            ptr += 4;
+            uint32_t mpack_size = payload_size - 4;
+            if (end - ptr < mpack_size) break;
+
+            mpack_reader_t reader;
+            mpack_reader_init_data(&reader, (const char*)ptr, mpack_size);
+            
+            mpack_tag_t tag = mpack_read_tag(&reader);
+            if (mpack_tag_type(&tag) == mpack_type_map) {
+                uint32_t map_size = mpack_tag_map_count(&tag);
+                for (uint32_t i = 0; i < map_size; i++) {
+                    char key[32];
+                    mpack_expect_cstr(&reader, key, sizeof(key));
+                    if (strcmp(key, "method") == 0) {
+                        char method[32];
+                        mpack_expect_cstr(&reader, method, sizeof(method));
+                        if (strcmp(method, "available") == 0) {
+                            // Found available signals packet, now find the signalId
+                        }
+                    } else if (strcmp(key, "params") == 0) {
+                        uint32_t params_size = mpack_expect_map(&reader);
+                        for (uint32_t k = 0; k < params_size; k++) {
+                            char pkey[32];
+                            mpack_expect_cstr(&reader, pkey, sizeof(pkey));
+                            if (strcmp(pkey, "signalIds") == 0) {
+                                uint32_t array_size = mpack_expect_array(&reader);
+                                for (uint32_t j = 0; j < array_size; j++) {
+                                    char sig_id[64];
+                                    mpack_expect_cstr(&reader, sig_id, sizeof(sig_id));
+                                    if (strcmp(sig_id, "test_signal") == 0) {
+                                        signal_found = true;
+                                    }
+                                }
+                            } else {
+                                mpack_discard(&reader);
+                            }
+                        }
+                    } else {
+                        mpack_discard(&reader);
+                    }
+                }
+            }
+            mpack_reader_destroy(&reader);
+            ptr += mpack_size;
+        } else {
+            ptr += payload_size;
+        }
+    }
+
+    EXPECT_TRUE(signal_found);
 
     close(client_sock);
 }
