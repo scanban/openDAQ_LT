@@ -75,8 +75,9 @@
     - [x] Created `tests/integration/posix_streaming_test.cpp`.
     - [x] Verified TCP connection lifecycle and initial handshake.
     - [x] Verified UNIX Domain Socket lifecycle.
-    - [x] Verified initial signal availability broadcasting.
+    - [x] Verified initial signal availability broadcasting with full MessagePack protocol validation.
     - [x] Verified client disconnection handling and resource purging.
+
 - [x] **Stability & Robustness**:
     - [x] Fixed null pointer dereferences in `streaming_signals.c` when callbacks are missing.
     - [x] Fixed WebSocket header serialization conditional logic in `streaming_packet.c`.
