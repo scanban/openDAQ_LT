@@ -34,7 +34,8 @@ int bind(int sockfd, const struct sockaddr *addr, uint32_t addrlen) { (void)sock
 int listen(int sockfd, int backlog) { (void)sockfd; (void)backlog; return 0; }
 int accept(int sockfd, struct sockaddr *addr, uint32_t *addrlen) { (void)sockfd; (void)addr; (void)addrlen; return 0; }
 int closesocket(int sockfd) { (void)sockfd; return 0; }
-int send(int sockfd, const void *buf, size_t len, int flags) { (void)sockfd; (void)buf; (void)len; (void)flags; return 0; }
+int send(int sockfd, const void *buf, size_t len, int flags) { (void)sockfd; (void)buf; (void)flags; return (int)len; }
+int setsockopt(int sockfd, int level, int optname, const void *optval, uint32_t optlen) { (void)sockfd; (void)level; (void)optname; (void)optval; (void)optlen; return 0; }
 
 // IP_Webserver.h mocks
 char mock_webs_send_buffer[2048];

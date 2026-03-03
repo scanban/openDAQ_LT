@@ -10,7 +10,7 @@ protected:
 };
 
 TEST_F(StreamIdTest, StreamMallocSetsSocketAndId) {
-    int test_socket = 42;
+    transport_socket_t test_socket = 42;
     const char* test_id = "test_stream_id";
     
     struct stream* s = stream_malloc(test_socket, test_id);
@@ -21,10 +21,10 @@ TEST_F(StreamIdTest, StreamMallocSetsSocketAndId) {
 }
 
 TEST_F(StreamIdTest, StreamFreeClearsSocketHandle) {
-    int test_socket = 42;
+    transport_socket_t test_socket = 42;
     struct stream* s = stream_malloc(test_socket, "id");
     
     stream_free(s);
     
-    EXPECT_EQ(s->socket_handle, 0);
+    EXPECT_EQ(s->socket_handle, TRANSPORT_INVALID_SOCKET);
 }

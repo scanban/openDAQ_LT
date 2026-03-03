@@ -91,6 +91,10 @@ int listen(int sockfd, int backlog);
 int accept(int sockfd, struct sockaddr *addr, uint32_t *addrlen);
 int closesocket(int sockfd);
 int send(int sockfd, const void *buf, size_t len, int flags);
+int setsockopt(int sockfd, int level, int optname, const void *optval, uint32_t optlen);
+
+#define SOL_SOCKET  1
+#define SO_CALLBACK 100
 
 #ifdef __cplusplus
 }

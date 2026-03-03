@@ -81,9 +81,28 @@ add_executable(unit_tests
   segger/streaming/streaming_packet.c
   segger/streaming/streaming_meta.c
   segger/streaming/streaming_jsonrpc.c
+  segger/streaming/streaming_transport.c
   ${MPACK_SRC}
   ${MJSON_SRC}
 )
 target_compile_definitions(unit_tests PRIVATE WEBSOCKET_STREAMING=1)
 target_link_libraries(unit_tests GTest::gtest_main)
 add_test(NAME placeholder_test COMMAND unit_tests)
+
+# Add POSIX transport tests
+add_executable(posix_tests
+  tests/unit/streaming_transport_test.cpp
+  segger/streaming/streaming_transport.c
+)
+target_compile_definitions(posix_tests PRIVATE STREAMING_TRANSPORT=1) # 1 is POSIX
+target_link_libraries(posix_tests GTest::gtest_main)
+add_test(NAME transport_posix_test COMMAND posix_tests)
+
+# Add UNIX transport tests
+add_executable(unix_tests
+  tests/unit/streaming_transport_test.cpp
+  segger/streaming/streaming_transport.c
+)
+target_compile_definitions(unix_tests PRIVATE STREAMING_TRANSPORT=1 STREAMING_PROTOCOL=1) # 1 is POSIX, 1 is UNIX
+target_link_libraries(unix_tests GTest::gtest_main)
+add_test(NAME transport_unix_test COMMAND unix_tests)
