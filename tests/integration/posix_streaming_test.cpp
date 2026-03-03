@@ -167,8 +167,8 @@ TEST_F(PosixStreamingIntegrationTest, InitialSignals) {
                     if (strcmp(key, "method") == 0) {
                         char method[32];
                         mpack_expect_cstr(&reader, method, sizeof(method));
-                        if (strcmp(method, "available") == 0) {
-                            // Found available signals packet, now find the signalId
+                        if (strcmp(method, "available") != 0) {
+                          break;
                         }
                     } else if (strcmp(key, "params") == 0) {
                         uint32_t params_size = mpack_expect_map(&reader);
