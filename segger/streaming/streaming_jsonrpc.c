@@ -74,7 +74,7 @@ static void rpc_cb_unsubscribe(struct jsonrpc_request *req)
 	}
 }
 
-static int streaming_jsonrpc_callback(void *pContext, WEBS_OUTPUT *pOutput, const char *sMethod, const char *sAccept,
+int streaming_jsonrpc_callback(void *pContext, WEBS_OUTPUT *pOutput, const char *sMethod, const char *sAccept,
                                       const char *sContentType, const char *sResource, U32 ContentLen)
 {
 	(void)sMethod;
@@ -99,7 +99,19 @@ void streaming_jsonrpc_init(char stream_id[9])
 	static char unsubscribe_method[21];
 	snprintf(subscribe_method, sizeof(subscribe_method), "%s.subscribe", stream_id);
 	snprintf(unsubscribe_method, sizeof(unsubscribe_method), "%s.unsubscribe", stream_id);
-	jsonrpc_ctx_export(&ctx, subscribe_method, rpc_cb_subscribe);
-	jsonrpc_ctx_export(&ctx, unsubscribe_method, rpc_cb_unsubscribe);
+
+	static struct jsonrpc_method m1, m2;
+	m1.method = subscribe_method;
+	m1.method_sz = strlen(subscribe_method);
+	m1.cb = rpc_cb_subscribe;
+	m1.next = ctx.methods;
+	ctx.methods = &m1;
+
+	m2.method = unsubscribe_method;
+	m2.method_sz = strlen(unsubscribe_method);
+	m2.cb = rpc_cb_unsubscribe;
+	m2.next = ctx.methods;
+	ctx.methods = &m2;
+
 	IP_WEBS_METHOD_AddHook_SingleMethod(&streaming_hook, streaming_jsonrpc_callback, JSONRPC_PATH, JSONRPC_METHOD);
 }
