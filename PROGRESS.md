@@ -49,8 +49,24 @@
 - [x] **streaming_meta.c**:
     - [x] Implemented and passed `tests/unit/streaming_meta_test.cpp`.
 
+### Phase 5: Transport Abstraction & POSIX Support
+- [x] **streaming_transport.h/c**:
+    - [x] Implemented transport abstraction layer for socket operations.
+    - [x] Added support for SEGGER emNet (backward compatibility).
+    - [x] Added support for POSIX TCP (`AF_INET`).
+    - [x] Added support for POSIX UNIX Domain Sockets (`AF_UNIX`).
+- [x] **streaming_handler.c**:
+    - [x] Refactored to use `streaming_transport` abstraction.
+    - [x] Removed direct dependencies on SEGGER `IP.h` and `RTOS.h` in core logic.
+- [x] **stream_id.h/c**:
+    - [x] Updated to use `transport_socket_t`.
+- [x] **Testing**:
+    - [x] Updated existing unit tests to work with the new abstraction.
+    - [x] Added `posix_tests` and `unix_tests` to `CMakeLists.txt`.
+    - [x] Verified all tests pass on POSIX (Linux).
+
 ---
 
 ## Next Steps
 1. Finalize and review all testing infrastructure.
-2. Consider Phase 5 (Integration tests or further modules like `streaming_handler.c`).
+2. Consider Phase 6 (Integration tests or further modules).
