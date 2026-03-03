@@ -1,6 +1,10 @@
 #ifndef _STREAMING_META_H
 #define _STREAMING_META_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "streaming_packet.h"
 #include "streaming_signals.h"
 
@@ -52,5 +56,9 @@ int build_mpack_meta_stream_init(char *dst, int size, const char *id);
 #define META_FILLLEVEL "fillLevel"
 #define META_START "start"
 #define META_DELTA "delta"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
