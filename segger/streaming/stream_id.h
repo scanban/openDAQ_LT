@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "streaming_transport.h"
+
 #define NUM_STREAMS_MAX 1
 
 extern struct stream single_stream;
@@ -16,11 +18,11 @@ typedef int stream_send_packet(const struct stream *s, void *p);
 struct stream {
 	stream_send *stream;
 	stream_send_packet *streamp;
-	int socket_handle;
+	transport_socket_t socket_handle;
 	const char *id;
 };
 
-struct stream *stream_malloc(int socket, const char *id);
+struct stream *stream_malloc(transport_socket_t socket, const char *id);
 void stream_free(struct stream *stream);
 void streaming_streams_init(void);
 

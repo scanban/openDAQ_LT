@@ -15,9 +15,7 @@
  */
 
 #include "streaming_handler.h"
-#include "IP.h"
-#include "IP_Webserver.h"
-#include "IP_WEBSOCKET.h"
+#include "streaming_transport.h"
 #include "libs/mjson/src/mjson.h"
 #include "stream_id.h"
 #include "streaming_jsonrpc.h"
@@ -27,10 +25,17 @@
 #include "streaming_websocket_rx.h"
 #include <stdio.h>
 
+#if STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
+#include "IP.h"
+#include "IP_Webserver.h"
+#include "IP_WEBSOCKET.h"
+#include "RTOS.h"
+#endif
+
 struct streaming_callbacks *streaming_cbs;
 static char stream_id[9];
 
-#if WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 #define IP_WEBSOCKET_CLOSE_CODE_TRY_AGAIN_LATER 1013
 
 static int websocket_acceptKey_generator(WEBS_OUTPUT *pOutput, void *pSecWebSocketKey, int SecWebSocketKeyLen,
@@ -53,8 +58,8 @@ static void streaming_dispatch_handle(WEBS_OUTPUT *pOutput, void *pConnection)
 		    IP_WEBSOCKET_CLOSE_CODE_TRY_AGAIN_LATER >> 8,
 		    IP_WEBSOCKET_CLOSE_CODE_TRY_AGAIN_LATER & 0xff,
 		};
-		send(handle, packet, sizeof(packet), 0);
-		closesocket(handle);
+		transport_socket_send(handle, packet, sizeof(packet));
+		transport_socket_close(handle);
 	}
 }
 
@@ -69,11 +74,11 @@ void streaming_init(struct streaming_callbacks *streaming_cb)
 {
 	signals_init();
 	snprintf(stream_id, sizeof(stream_id), "%08X", (rand() << 16) + rand());
-#if STREAMING_INCLUDE_CONFIG_CHANNEL
+#if STREAMING_INCLUDE_CONFIG_CHANNEL && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 	streaming_jsonrpc_init(stream_id);
 #endif
 	streaming_cbs = streaming_cb;
-#if WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 	OS_MAILBOX_Create(&mb, sizeof(buff), 1, &buff);
 	IP_WEBS_WEBSOCKET_AddHook(&webSocketHook, &StreamingWebSocketApi, STREAMING_WEBSOCKET_URI, "");
 #endif
@@ -81,31 +86,26 @@ void streaming_init(struct streaming_callbacks *streaming_cb)
 
 void streaming_start(void)
 {
-	long handle;
+	transport_socket_t handle;
 
-#if WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 	// nothing to do here
 #else
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in addr = {
-	    .sin_family = AF_INET,
-	    .sin_port = htons(STREAMING_PORT),
-	    .sin_addr.s_addr = htonl(ADDR_ANY),
-	};
-	bind(sock, (struct sockaddr *)&addr, sizeof(addr));
-	listen(sock, 1);
+	transport_socket_t sock = transport_socket_create();
+	transport_socket_bind(sock);
+	transport_socket_listen(sock);
 #endif
 
 	while (true) {
-#if WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 		long *ptr;
 		OS_MAILBOX_GetPtrBlocked(&mb, (void **)&ptr);
 		handle = *ptr;
 #else
-		handle = accept(sock, NULL, 0);
+		handle = transport_socket_accept(sock);
 #endif
 
-		setsockopt(handle, SOL_SOCKET, SO_CALLBACK, (void *)streaming_rx_callback, 0);
+		transport_socket_set_rx_callback(handle, (void *)streaming_rx_callback);
 		struct stream *stream = stream_malloc(handle, stream_id);
 		streaming_send_meta_stream(stream);
 		signals_send_all_avail(stream);
@@ -114,19 +114,19 @@ void streaming_start(void)
 
 		// the next line will through a WARNING before we leave the loop
 		// there is no easier way to check the socket for errors
-		while (!IP_SOCKET_GetErrorCode(handle)) {
-			OS_Delay(10);
+		while (!transport_socket_check_error(handle)) {
+			transport_delay(10);
 		}
 
 		// Error might indicate we ran out of network buffers or the socket is closed
 		signals_purge_stream(stream);
 		stream_free(stream);
-#ifdef WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 		OS_MAILBOX_Purge(&mb);
 #endif
 	}
 
-	OS_TASK_Terminate(NULL);
+	transport_task_terminate();
 }
 
 int streaming_send_avail(const struct stream *stream, signal_t **signalz, int num_signals)

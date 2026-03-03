@@ -15,6 +15,7 @@
  */
 
 #include "streaming_websocket_rx.h"
+#include "streaming_transport.h"
 #ifdef WEBSOCKET_STREAMING
 	#include "IP_WEBSOCKET.h"
 #endif
@@ -23,7 +24,7 @@
 
 static void close_delayed(const void *handle)
 {
-	closesocket((int)handle);
+	transport_socket_close((transport_socket_t)handle);
 }
 
 static void remove_cb(IP_EXEC_DELAYED *delayed, void *handle)
@@ -85,7 +86,7 @@ int streaming_rx_callback(long Socket, IP_PACKET *pPacket, int code)
 		memcpy(&pPacket->pData[4], "sorry", 5);
 		pPacket->NumBytes = 9; // websocket header + payload
 		IP_TCP_SendAndFree(Socket, pPacket);
-		setsockopt(Socket, SOL_SOCKET, SO_CALLBACK, NULL, 0);
+		transport_socket_set_rx_callback(Socket, NULL);
 		IP_ExecDelayed(&exec_delayed, close_delayed, (void *)Socket, NULL, remove_cb);
 		return IP_OK_KEEP_PACKET;
 	}
@@ -118,7 +119,7 @@ int streaming_rx_callback(long Socket, IP_PACKET *pPacket, int code)
 		pPacket->pData[1] &= 0x7F; // clear mask bit, keep payload length
 		pPacket->NumBytes -= ptr - pPacket->pData - sizeof(head);
 		IP_TCP_SendAndFree(Socket, pPacket);
-		setsockopt(Socket, SOL_SOCKET, SO_CALLBACK, NULL, 0);
+		transport_socket_set_rx_callback(Socket, NULL);
 		IP_ExecDelayed(&exec_delayed, close_delayed, (void *)Socket, NULL, remove_cb);
 		return IP_OK_KEEP_PACKET;
 	}
@@ -128,7 +129,7 @@ int streaming_rx_callback(long Socket, IP_PACKET *pPacket, int code)
 
 	// fallthrough for unknown opcodes. connection will be closed
 CloseSocket:
-	setsockopt(Socket, SOL_SOCKET, SO_CALLBACK, NULL, 0);
+	transport_socket_set_rx_callback(Socket, NULL);
 	IP_ExecDelayed(&exec_delayed, close_delayed, (void *)Socket, NULL, remove_cb);
 	return IP_OK;
 }

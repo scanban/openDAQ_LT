@@ -15,27 +15,33 @@
  */
 
 #include "stream_id.h"
-#include "IP.h"
+#include "streaming_transport.h"
 
 struct stream single_stream;
 
 static int socket_send(const struct stream *s, const char *buf, size_t len)
 {
-	return send(s->socket_handle, buf, len, 0);
+	return transport_socket_send(s->socket_handle, buf, len);
 }
 
 static int socket_send_packet(const struct stream *s, void *p)
 {
+#if STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 	return IP_TCP_SendAndFree(s->socket_handle, (IP_PACKET *)p);
+#else
+	(void)s;
+	(void)p;
+	return -1;
+#endif
 }
 
 void stream_free(struct stream *s)
 {
 	// socket handle closed elsewhere
-	s->socket_handle = 0;
+	s->socket_handle = TRANSPORT_INVALID_SOCKET;
 }
 
-struct stream *stream_malloc(int socket, const char *id)
+struct stream *stream_malloc(transport_socket_t socket, const char *id)
 {
 	single_stream.socket_handle = socket;
 	single_stream.stream = socket_send;
@@ -47,6 +53,6 @@ struct stream *stream_malloc(int socket, const char *id)
 void streaming_streams_init(void)
 {
 	for (int i = 0; i < NUM_STREAMS_MAX; i++) {
-		single_stream.socket_handle = 0;
+		single_stream.socket_handle = TRANSPORT_INVALID_SOCKET;
 	}
 }

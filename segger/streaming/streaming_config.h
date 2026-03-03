@@ -73,6 +73,24 @@ extern "C" {
 	#define STREAMING_TCP_PORT 7412
 #endif
 
+#ifndef STREAMING_UNIX_PATH
+	#define STREAMING_UNIX_PATH "/tmp/opendaq_streaming.sock"
+#endif
+
+#define STREAMING_TRANSPORT_SEGGER 0
+#define STREAMING_TRANSPORT_POSIX  1
+
+#ifndef STREAMING_TRANSPORT
+	#define STREAMING_TRANSPORT STREAMING_TRANSPORT_SEGGER
+#endif
+
+#define STREAMING_PROTOCOL_TCP  0
+#define STREAMING_PROTOCOL_UNIX 1
+
+#ifndef STREAMING_PROTOCOL
+	#define STREAMING_PROTOCOL STREAMING_PROTOCOL_TCP
+#endif
+
 #ifdef __cplusplus
 }
 #endif
