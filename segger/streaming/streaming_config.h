@@ -21,6 +21,10 @@
 #ifndef _STREAMING_CONFIG_H_
 #define _STREAMING_CONFIG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef JSONRPC_PORT
 	#define JSONRPC_PORT "http"
 #endif
@@ -67,6 +71,10 @@
 
 #ifndef STREAMING_TCP_PORT
 	#define STREAMING_TCP_PORT 7412
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif
