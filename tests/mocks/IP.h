@@ -96,6 +96,7 @@ int setsockopt(int sockfd, int level, int optname, const void *optval, uint32_t 
 
 #define SOL_SOCKET  1
 #define SO_CALLBACK 100
+#define SO_NONBLOCK 101
 #else
 // On POSIX we still need some defines for SEGGER-only code path that might be compiled
 #define SO_CALLBACK 100
