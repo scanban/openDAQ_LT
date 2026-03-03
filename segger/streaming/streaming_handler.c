@@ -34,6 +34,7 @@
 
 struct streaming_callbacks *streaming_cbs;
 static char stream_id[9];
+static volatile bool streaming_running = false;
 
 #if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 #define IP_WEBSOCKET_CLOSE_CODE_TRY_AGAIN_LATER 1013
@@ -84,6 +85,11 @@ void streaming_init(struct streaming_callbacks *streaming_cb)
 #endif
 }
 
+void streaming_stop(void)
+{
+	streaming_running = false;
+}
+
 void streaming_start(void)
 {
 	transport_socket_t handle;
@@ -94,38 +100,53 @@ void streaming_start(void)
 	transport_socket_t sock = transport_socket_create();
 	transport_socket_bind(sock);
 	transport_socket_listen(sock);
+	transport_socket_set_nonblocking(sock, true);
 #endif
 
-	while (true) {
+	streaming_running = true;
+	while (streaming_running) {
 #if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 		long *ptr;
-		OS_MAILBOX_GetPtrBlocked(&mb, (void **)&ptr);
-		handle = *ptr;
+		if (OS_MAILBOX_GetPtr(&mb, (void **)&ptr) == 0) {
+			handle = *ptr;
+		} else {
+			transport_delay(10);
+			continue;
+		}
 #else
 		handle = transport_socket_accept(sock);
+		if (handle == TRANSPORT_INVALID_SOCKET) {
+			transport_delay(10);
+			continue;
+		}
 #endif
 
 		transport_socket_set_rx_callback(handle, (void *)streaming_rx_callback);
 		struct stream *stream = stream_malloc(handle, stream_id);
 		streaming_send_meta_stream(stream);
 		signals_send_all_avail(stream);
-		if (streaming_cbs->on_connect != NULL)
+		if (streaming_cbs->on_connect != NULL) {
 			streaming_cbs->on_connect(stream);
+		}
 
 		// the next line will through a WARNING before we leave the loop
 		// there is no easier way to check the socket for errors
-		while (!transport_socket_check_error(handle)) {
+		while (streaming_running && !transport_socket_check_error(handle)) {
 			transport_delay(10);
 		}
 
 		// Error might indicate we ran out of network buffers or the socket is closed
 		signals_purge_stream(stream);
 		stream_free(stream);
+		transport_socket_close(handle);
 #if WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 		OS_MAILBOX_Purge(&mb);
 #endif
 	}
 
+#if !(WEBSOCKET_STREAMING && STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER)
+	transport_socket_close(sock);
+#endif
 	transport_task_terminate();
 }
 

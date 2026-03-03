@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include "streaming_config.h"
 
 #ifdef __cplusplus
@@ -66,6 +67,14 @@ int transport_socket_listen(transport_socket_t sock);
  * @return: handle to the accepted connection socket or TRANSPORT_INVALID_SOCKET on error.
  */
 transport_socket_t transport_socket_accept(transport_socket_t sock);
+
+/**
+ * Sets the socket to non-blocking mode.
+ * @param sock: socket handle.
+ * @param nonblocking: true for non-blocking, false for blocking.
+ * @return: 0 on success, <0 on error.
+ */
+int transport_socket_set_nonblocking(transport_socket_t sock, bool nonblocking);
 
 /**
  * Sends data over the socket.

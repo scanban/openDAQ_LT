@@ -44,6 +44,12 @@ transport_socket_t transport_socket_accept(transport_socket_t sock)
 	return accept(sock, NULL, 0);
 }
 
+int transport_socket_set_nonblocking(transport_socket_t sock, bool nonblocking)
+{
+	int value = nonblocking ? 1 : 0;
+	return setsockopt(sock, SOL_SOCKET, SO_NONBLOCK, &value, sizeof(value));
+}
+
 int transport_socket_send(transport_socket_t sock, const void *pBuffer, size_t NumBytes)
 {
 	return send(sock, pBuffer, NumBytes, 0);
@@ -112,6 +118,18 @@ int transport_socket_listen(transport_socket_t sock)
 transport_socket_t transport_socket_accept(transport_socket_t sock)
 {
 	return accept(sock, NULL, NULL);
+}
+
+int transport_socket_set_nonblocking(transport_socket_t sock, bool nonblocking)
+{
+	int flags = fcntl(sock, F_GETFL, 0);
+	if (flags == -1) return -1;
+	if (nonblocking) {
+		flags |= O_NONBLOCK;
+	} else {
+		flags &= ~O_NONBLOCK;
+	}
+	return fcntl(sock, F_SETFL, flags);
 }
 
 int transport_socket_send(transport_socket_t sock, const void *pBuffer, size_t NumBytes)

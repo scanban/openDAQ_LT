@@ -23,6 +23,7 @@ extern struct streaming_callbacks *streaming_cbs;
 
 void streaming_init(struct streaming_callbacks *streaming_cb);
 void streaming_start(void);
+void streaming_stop(void);
 
 int streaming_send_avail(const struct stream *stream, signal_t **signals, int num_signals);
 int streaming_send_unavail(const struct stream *stream, signal_t **signals, int num_signals);
