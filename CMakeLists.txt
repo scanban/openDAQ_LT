@@ -40,7 +40,7 @@ include_directories(segger/discovery)
 # We'll need to create symlinks or dummy directories if we want to avoid modifying source code.
 # Alternatively, we can use a wrapper header.
 # Let's try to map the fetched mjson correctly.
-set(MJSON_DIR ${mjson_SOURCE_DIR})
+set(MJSON_DIR ${mjson_SOURCE_DIR}/src)
 include_directories(${MJSON_DIR})
 # Create a dummy "libs/mjson/src" directory structure to satisfy #include "libs/mjson/src/mjson.h"
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dummy_includes/libs/mjson/src)
@@ -52,6 +52,19 @@ include_directories(${CMAKE_BINARY_DIR}/dummy_includes)
 # mpack.h is usually included directly
 include_directories(${mpack_SOURCE_DIR}/src/mpack)
 
+# mpack and mjson sources
+set(MPACK_SRC_DIR ${mpack_SOURCE_DIR}/src/mpack)
+set(MPACK_SRC
+    ${MPACK_SRC_DIR}/mpack-common.c
+    ${MPACK_SRC_DIR}/mpack-expect.c
+    ${MPACK_SRC_DIR}/mpack-node.c
+    ${MPACK_SRC_DIR}/mpack-platform.c
+    ${MPACK_SRC_DIR}/mpack-reader.c
+    ${MPACK_SRC_DIR}/mpack-writer.c
+)
+set(MJSON_SRC ${mjson_SOURCE_DIR}/src/mjson.c)
+
+
 enable_testing()
 
 # We will add tests in the next phases.
@@ -59,9 +72,18 @@ enable_testing()
 add_executable(unit_tests
   tests/unit/stream_id_test.cpp
   tests/unit/streaming_signals_test.cpp
+  tests/unit/streaming_packet_test.cpp
+  tests/unit/streaming_meta_test.cpp
+  tests/unit/streaming_jsonrpc_test.cpp
   tests/mocks/mocks.cpp
   segger/streaming/stream_id.c
   segger/streaming/streaming_signals.c
+  segger/streaming/streaming_packet.c
+  segger/streaming/streaming_meta.c
+  segger/streaming/streaming_jsonrpc.c
+  ${MPACK_SRC}
+  ${MJSON_SRC}
 )
+target_compile_definitions(unit_tests PRIVATE WEBSOCKET_STREAMING=1)
 target_link_libraries(unit_tests GTest::gtest_main)
 add_test(NAME placeholder_test COMMAND unit_tests)
