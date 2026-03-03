@@ -57,7 +57,7 @@ static int serialize_header(tl_packet_t *packet, unsigned char *dst, size_t buff
 	// the streaming header size depends on the payload size
 	size_t tl_header_size = (packet->payload_size) > UINT8_MAX ? 8 : 4;
 
-#ifdef WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING
 	// the websocket header size depends on the size of its payload, which contains the streaming header
 	size_t websocket_payload_size = tl_header_size + packet->payload_size;
 	size_t websocket_header_size = websocket_payload_size < 126 ? 2 : 4;
@@ -71,7 +71,7 @@ static int serialize_header(tl_packet_t *packet, unsigned char *dst, size_t buff
 		return -1;
 	}
 
-#ifdef WEBSOCKET_STREAMING
+#if WEBSOCKET_STREAMING
 	// serialize the websocket header
 	*dst++ = 0x80 + IP_WEBSOCKET_FRAME_TYPE_BINARY; // FIN and binary packet
 	if (websocket_payload_size < 126) {

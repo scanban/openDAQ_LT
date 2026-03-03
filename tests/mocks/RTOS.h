@@ -31,6 +31,7 @@ typedef struct {
 void OS_MAILBOX_Create(OS_MAILBOX *pMailBox, int sizeof_item, int max_items, void *pBuffer);
 int OS_MAILBOX_Put(OS_MAILBOX *pMailBox, const void *pData);
 void OS_MAILBOX_GetPtrBlocked(OS_MAILBOX *pMailBox, void **ppData);
+int OS_MAILBOX_GetPtr(OS_MAILBOX *pMailBox, void **ppData);
 void OS_MAILBOX_Purge(OS_MAILBOX *pMailBox);
 
 #ifdef __cplusplus

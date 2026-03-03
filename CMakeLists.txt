@@ -106,3 +106,40 @@ add_executable(unix_tests
 target_compile_definitions(unix_tests PRIVATE STREAMING_TRANSPORT=1 STREAMING_PROTOCOL=1) # 1 is POSIX, 1 is UNIX
 target_link_libraries(unix_tests GTest::gtest_main)
 add_test(NAME transport_unix_test COMMAND unix_tests)
+
+# Integration Tests (POSIX)
+add_executable(posix_integration_tests
+  tests/integration/posix_streaming_test.cpp
+  segger/streaming/streaming_handler.c
+  segger/streaming/streaming_transport.c
+  segger/streaming/stream_id.c
+  segger/streaming/streaming_signals.c
+  segger/streaming/streaming_packet.c
+  segger/streaming/streaming_meta.c
+  segger/streaming/streaming_jsonrpc.c
+  segger/streaming/streaming_websocket_rx.c
+  tests/mocks/mocks.cpp
+  ${MPACK_SRC}
+  ${MJSON_SRC}
+)
+target_compile_definitions(posix_integration_tests PRIVATE STREAMING_TRANSPORT=1 STREAMING_PROTOCOL=0 POSIX_INTEGRATION_TEST=1)
+target_link_libraries(posix_integration_tests GTest::gtest_main pthread)
+add_test(NAME posix_integration_test COMMAND posix_integration_tests)
+
+add_executable(unix_integration_tests
+  tests/integration/posix_streaming_test.cpp
+  segger/streaming/streaming_handler.c
+  segger/streaming/streaming_transport.c
+  segger/streaming/stream_id.c
+  segger/streaming/streaming_signals.c
+  segger/streaming/streaming_packet.c
+  segger/streaming/streaming_meta.c
+  segger/streaming/streaming_jsonrpc.c
+  segger/streaming/streaming_websocket_rx.c
+  tests/mocks/mocks.cpp
+  ${MPACK_SRC}
+  ${MJSON_SRC}
+)
+target_compile_definitions(unix_integration_tests PRIVATE STREAMING_TRANSPORT=1 STREAMING_PROTOCOL=1 POSIX_INTEGRATION_TEST=1)
+target_link_libraries(unix_integration_tests GTest::gtest_main pthread)
+add_test(NAME unix_integration_test COMMAND unix_integration_tests)

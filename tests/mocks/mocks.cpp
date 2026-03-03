@@ -17,6 +17,7 @@ void OS_MUTEX_Unlock(OS_MUTEX *pMutex) { (void)pMutex; }
 void OS_MAILBOX_Create(OS_MAILBOX *pMailBox, int sizeof_item, int max_items, void *pBuffer) { (void)pMailBox; (void)sizeof_item; (void)max_items; (void)pBuffer; }
 int OS_MAILBOX_Put(OS_MAILBOX *pMailBox, const void *pData) { (void)pMailBox; (void)pData; return 0; }
 void OS_MAILBOX_GetPtrBlocked(OS_MAILBOX *pMailBox, void **ppData) { (void)pMailBox; (void)ppData; }
+int OS_MAILBOX_GetPtr(OS_MAILBOX *pMailBox, void **ppData) { (void)pMailBox; (void)ppData; return -1; }
 void OS_MAILBOX_Purge(OS_MAILBOX *pMailBox) { (void)pMailBox; }
 
 // IP.h mocks
@@ -27,6 +28,7 @@ int IP_MDNS_SERVER_Stop(void) { return 0; }
 void IP_ExecDelayed(IP_EXEC_DELAYED *pDelayed, IP_DELAYED_FUNC *pfFunc, void *pData, void *pContext, void *pfRemove) { (void)pDelayed; (void)pfFunc; (void)pData; (void)pContext; (void)pfRemove; }
 void IP_UDP_ReducePayloadLen(IP_PACKET *pPacket, int Len) { (void)pPacket; (void)Len; }
 
+#if STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 uint16_t htons(uint16_t hostshort) { return hostshort; }
 uint32_t htonl(uint32_t hostlong) { return hostlong; }
 int socket(int domain, int type, int protocol) { (void)domain; (void)type; (void)protocol; return 0; }
@@ -36,6 +38,7 @@ int accept(int sockfd, struct sockaddr *addr, uint32_t *addrlen) { (void)sockfd;
 int closesocket(int sockfd) { (void)sockfd; return 0; }
 int send(int sockfd, const void *buf, size_t len, int flags) { (void)sockfd; (void)buf; (void)flags; return (int)len; }
 int setsockopt(int sockfd, int level, int optname, const void *optval, uint32_t optlen) { (void)sockfd; (void)level; (void)optname; (void)optval; (void)optlen; return 0; }
+#endif
 
 // IP_Webserver.h mocks
 char mock_webs_send_buffer[2048];
@@ -64,6 +67,7 @@ void IP_WEBS_METHOD_AddHook_SingleMethod(IP_WEBS_METHOD_HOOK *pHook, void *pfFun
 int IP_WEBSOCKET_GenerateAcceptKey(const char *pKey, size_t KeyLen, char *pBuffer, size_t BufferSize) { (void)pKey; (void)KeyLen; (void)pBuffer; (void)BufferSize; return 0; }
 void IP_WEBS_WEBSOCKET_AddHook(IP_WEBS_WEBSOCKET_HOOK *pHook, const IP_WEBS_WEBSOCKET_API *pApi, const char *pURI, const char *pProtocols) { (void)pHook; (void)pApi; (void)pURI; (void)pProtocols; }
 
+#ifndef POSIX_INTEGRATION_TEST
 // streaming_handler.h mocks
 struct streaming_callbacks *streaming_cbs;
 int streaming_send_avail(const struct stream *stream, signal_t **signals, int num_signals) { (void)stream; (void)signals; (void)num_signals; return 0; }
@@ -72,5 +76,6 @@ int streaming_send_subscribed(const struct stream *stream, signal_t *signal) { (
 int streaming_send_unsubscribed(const struct stream *stream, signal_t *signal) { (void)stream; (void)signal; return 0; }
 int streaming_send_meta_stream(struct stream *stream) { (void)stream; return 0; }
 int streaming_send_meta_signal(const struct stream *stream, signal_t *signal, uint64_t valueIndex) { (void)stream; (void)signal; (void)valueIndex; return 0; }
+#endif
 
 }

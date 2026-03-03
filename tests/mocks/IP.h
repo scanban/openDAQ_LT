@@ -62,6 +62,7 @@ void IP_ExecDelayed(IP_EXEC_DELAYED *pDelayed, IP_DELAYED_FUNC *pfFunc, void *pD
 void IP_UDP_ReducePayloadLen(IP_PACKET *pPacket, int Len);
 
 // Standard socket mocks
+#if STREAMING_TRANSPORT == STREAMING_TRANSPORT_SEGGER
 #define AF_INET 2
 #define SOCK_STREAM 1
 #define ADDR_ANY 0
@@ -95,6 +96,11 @@ int setsockopt(int sockfd, int level, int optname, const void *optval, uint32_t 
 
 #define SOL_SOCKET  1
 #define SO_CALLBACK 100
+#else
+// On POSIX we still need some defines for SEGGER-only code path that might be compiled
+#define SO_CALLBACK 100
+#define closesocket close
+#endif
 
 #ifdef __cplusplus
 }

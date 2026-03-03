@@ -65,8 +65,24 @@
     - [x] Added `posix_tests` and `unix_tests` to `CMakeLists.txt`.
     - [x] Verified all tests pass on POSIX (Linux).
 
+### Phase 6: POSIX Integration Testing
+- [x] **streaming_handler.c**:
+    - [x] Implemented `streaming_stop()` for clean lifecycle management.
+    - [x] Enhanced `streaming_start()` loop with non-blocking support for testability.
+- [x] **streaming_transport.c**:
+    - [x] Implemented `transport_socket_set_nonblocking()` for POSIX and SEGGER.
+- [x] **Integration Tests**:
+    - [x] Created `tests/integration/posix_streaming_test.cpp`.
+    - [x] Verified TCP connection lifecycle and initial handshake.
+    - [x] Verified UNIX Domain Socket lifecycle.
+    - [x] Verified initial signal availability broadcasting.
+    - [x] Verified client disconnection handling and resource purging.
+- [x] **Stability & Robustness**:
+    - [x] Fixed null pointer dereferences in `streaming_signals.c` when callbacks are missing.
+    - [x] Fixed WebSocket header serialization conditional logic in `streaming_packet.c`.
+
 ---
 
 ## Next Steps
 1. Finalize and review all testing infrastructure.
-2. Consider Phase 6 (Integration tests or further modules).
+2. Consider Phase 7 (Performance benchmarks or additional protocol validation).

@@ -151,7 +151,9 @@ int signals_subscribe(const struct stream *stream, const char *signalId)
 				continue;
 			}
 			// otherwise we subscribe to this signal
-			streaming_cbs->on_subscribe(stream, &related_signal[i]);
+			if (streaming_cbs && streaming_cbs->on_subscribe) {
+				streaming_cbs->on_subscribe(stream, &related_signal[i]);
+			}
 			_signal_subscribe(stream, &related_signal[i], 0); // valueIndex is fixed to 0 and gets ignored
 		}
 		if (!signal->subscribed && signal->definition->signaltype == signal_type_value) {
@@ -159,7 +161,10 @@ int signals_subscribe(const struct stream *stream, const char *signalId)
 		}
 	}
 
-	uint64_t valueIndex = streaming_cbs->on_subscribe(stream, signal);
+	uint64_t valueIndex = 0;
+	if (streaming_cbs && streaming_cbs->on_subscribe) {
+		valueIndex = streaming_cbs->on_subscribe(stream, signal);
+	}
 	int ret = _signal_subscribe(stream, signal, valueIndex);
 	OS_MUTEX_Unlock(&signal_mutex);
 	return ret;
@@ -203,13 +208,17 @@ int signals_unsubscribe(const struct stream *stream, const char *signalId)
 					continue;
 				}
 				_signal_unsubscribe(stream, &related_signal[i]);
-				streaming_cbs->on_unsubscribe(stream, &related_signal[i]);
+				if (streaming_cbs && streaming_cbs->on_unsubscribe) {
+					streaming_cbs->on_unsubscribe(stream, &related_signal[i]);
+				}
 			}
 		}
 	}
 
 	int ret = _signal_unsubscribe(stream, signal);
-	streaming_cbs->on_unsubscribe(stream, signal);
+	if (streaming_cbs && streaming_cbs->on_unsubscribe) {
+		streaming_cbs->on_unsubscribe(stream, signal);
+	}
 	OS_MUTEX_Unlock(&signal_mutex);
 	return ret;
 }
