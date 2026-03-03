@@ -8,32 +8,36 @@ The implementation follows a layered architecture, as shown in the diagram below
 
 ```mermaid
 graph TD
-    App[Application Layer] --> Signal[Signal Layer]
-    Signal --> Protocol[Protocol Layer]
-    Protocol --> Network[Network Layer]
-    
     subgraph "Application Layer"
-        App_Signals[signals_add_table]
-        App_Serialize[openDAQ_streaming_serialize_*]
+        App["Application Layer"]
+        App_Signals["signals_add_table"]
+        App_Serialize["openDAQ_streaming_serialize_*"]
     end
 
     subgraph "Signal Layer"
-        Signal_State[signal_t, signal_table_t]
-        Signal_Sub[signals_subscribe/unsubscribe]
+        Signal["Signal Layer"]
+        Signal_State["signal_t, signal_table_t"]
+        Signal_Sub["signals_subscribe/unsubscribe"]
     end
 
     subgraph "Protocol Layer (TL)"
-        TL_Packet[tl_packet_t]
-        TL_Serialize[tl_serialize_packet]
-        Meta_MPack[streaming_meta (MessagePack)]
+        Protocol["Protocol Layer"]
+        TL_Packet["tl_packet_t"]
+        TL_Serialize["tl_serialize_packet"]
+        Meta_MPack["streaming_meta (MessagePack)"]
     end
 
     subgraph "Network Layer"
-        WebS_Hook[streaming_dispatch_handle]
-        Mailbox[OS_MAILBOX]
-        Handler_Task[streaming_start (Loop)]
-        Control_JSONRPC[streaming_jsonrpc_callback]
+        Network["Network Layer"]
+        WebS_Hook["streaming_dispatch_handle"]
+        Mailbox["OS_MAILBOX"]
+        Handler_Task["streaming_start (Loop)"]
+        Control_JSONRPC["streaming_jsonrpc_callback"]
     end
+
+    App --> Signal
+    Signal --> Protocol
+    Protocol --> Network
 ```
 
 ---
