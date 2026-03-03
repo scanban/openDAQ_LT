@@ -5,7 +5,7 @@
 - **Phase 1: Preparation & Scaffolding** - **COMPLETE**
 - **Phase 2: Mocking SEGGER Dependencies** - **COMPLETE**
 - **Phase 3: Initial Implementation (Pilot Test)** - **COMPLETE**
-- **Phase 4: Expansion** - **IN PROGRESS**
+- **Phase 4: Expansion** - **COMPLETE**
 
 ---
 
@@ -38,13 +38,19 @@
     - [x] Fixed code bugs (missing include, pointer dereference).
     - [x] Exported internal symbols for testing.
     - [x] Implemented and passed `tests/unit/streaming_signals_test.cpp`.
-- [ ] **streaming_packet.c**: Pending.
-- [ ] **streaming_jsonrpc.c**: Pending.
-- [ ] **streaming_meta.c**: Pending.
+- [x] **streaming_packet.c**:
+    - [x] Implemented and passed `tests/unit/streaming_packet_test.cpp`.
+    - [x] Added comprehensive tests for various data types, endianness, and implicit/explicit rules.
+    - [x] Enabled and verified WebSocket header serialization (RFC 6455 7-bit and 16-bit boundaries).
+- [x] **streaming_jsonrpc.c**:
+    - [x] Fixed dynamic RPC method export bug.
+    - [x] Implemented and passed `tests/unit/streaming_jsonrpc_test.cpp`.
+    - [x] Hardened test stability by properly initializing `streaming_callbacks`.
+- [x] **streaming_meta.c**:
+    - [x] Implemented and passed `tests/unit/streaming_meta_test.cpp`.
 
 ---
 
 ## Next Steps
-1. Implement unit tests for `streaming_packet.c` to verify MessagePack packet construction.
-2. Implement unit tests for `streaming_meta.c` for metadata serialization.
-3. Implement unit tests for `streaming_jsonrpc.c` (requires integration with `mjson` mock/logic).
+1. Finalize and review all testing infrastructure.
+2. Consider Phase 5 (Integration tests or further modules like `streaming_handler.c`).

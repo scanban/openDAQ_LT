@@ -38,6 +38,11 @@ The project does not contain a standalone build system (e.g., Makefile or CMake)
 - **Configuration:** Compile-time options are managed in `streaming_config.h` (e.g., ports, buffer sizes, max signals).
 - **Licensing:** The codebase contains a mix of Apache 2.0 and HBK-specific license headers.
 
+## Priorities
+1. Correctness & robustness (no UB, consistent error handling)
+2. Maintainability (clarity > cleverness)
+3. Resource awareness (CPU/memory/IO)
+
 ## Documentation
 - `segger/streaming/README.md`: Detailed usage instructions and API reference.
 - `segger/streaming/doc/`: Contains sequence and signal diagrams (`.svg`).
