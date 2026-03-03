@@ -1,5 +1,10 @@
 # README
 
+## Documentation
+- [Introduction to openDAQ Stream Protocol](doc/introduction.md)
+- [Technical API Reference](doc/API_REFERENCE.md)
+- [Data Flow Documentation](doc/DATA_FLOW.md)
+
 ## External Requirements
 - SEGGER embOS
 - SEGGER emNet
