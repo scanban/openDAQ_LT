@@ -1,6 +1,10 @@
 #ifndef _STREAMING_PACKET_H_
 #define _STREAMING_PACKET_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "stream_id.h"
 #include "streaming_signals.h"
 #include <stdbool.h>
@@ -111,5 +115,9 @@ int openDAQ_streaming_serialize_linear_signal(void *dst, size_t dst_size, uint64
  */
 int openDAQ_streaming_serialize_implicit_signal(void *dst, size_t dst_size, uint64_t index, signal_t *signal,
                                                 const void *src);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
